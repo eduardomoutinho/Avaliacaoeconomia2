@@ -1,0 +1,63 @@
+---
+title: "Eduardo Moutinho Gonçalves"
+format: html
+editor: visual
+---
+
+```{r}
+#| echo: false
+#| label: load-packages # nomes únicos
+#| include: false  # não inclui o resultado no doc
+library(tidyverse) # pacote ggplot2 (gráficos)
+library(WDI) # pacote dos dados
+library(gganimate) # Pacote para animações
+library(GetBCBData)
+library(dplyr)
+library(ggplot2)
+
+id.ipca <- c(ipca = 12381)
+
+df.ipca <- gbcbd_get_series(id = id.ipca,
+                            first.date = '2000-01-01',
+                            last.date = Sys.Date())
+
+
+glimpse(df.ipca)
+```
+
+## VARIÁVEL
+
+Representa a variação percentual mensal do IPCA (Índice de Preços ao Consumidor Amplo), o principal indicador da inflação no Brasil, calculado pelo IBGE. Ela mostra quanto os preços variaram de um mês para o outro e é usada pelo Banco Central para acompanhar e controlar a inflação dentro da meta definida pelo Conselho Monetário Nacional.
+
+```         
+```
+
+## GRÁFICO COM SÉRIE TEMPORAL
+
+O **gráfico com dados de série temporal** serve para observar o progresso de somente uma variável durante os anos. Ao utilizar a variável "IPCA (Índice de Preços ao Consumidor Amplo)", o gráfico de série temporal representa os dados específicos de um único país (Brasil, no caso) ao longo dos anos.
+
+```{r}
+#| echo: false
+# Gráfico animado
+p <- ggplot(df.ipca, aes(x = ref.date, y = value)) +
+  geom_line(color = "darkred") +
+  geom_point(color = "black", size = 2) +
+  labs(title = "IPCA - Variação Mensal",
+       subtitle = "Mês: {format(frame_time, '%b %Y')}",
+       x = "Data", y = "Inflação (%)") +
+  theme_minimal() +
+  transition_time(ref.date) +
+  shadow_mark()
+
+# Caminho temporário para salvar o GIF
+anim_path <- file.path(tempdir(), "ipca_animado.gif")
+
+# Salvar animação no GIF com tamanho definido em pixels, sem 'units' nem 'res'
+animate(p, nframes = 200, fps = 10, renderer = gifski_renderer(anim_path))
+
+anim_save(anim_path, animation = last_animation())
+
+# Mostrar a animação
+knitr::include_graphics(anim_path)
+
+```
